@@ -28,49 +28,7 @@ class Maze:
     def load_layout(self, layout_file):
         with open(layout_file, 'r') as f:
             return [list(line.strip()) for line in f]
-
-    # def find_char(self, char):
-    #     for r in range(self.rows):
-    #         for c in range(self.cols):
-    #             if self.layout[r][c] == char:
-    #                 return (r, c)
-    #     return None
-
-    # def find_all_char(self, char):
-    #     locations = []
-    #     for r in range(self.rows):
-    #         for c in range(self.cols):
-    #             if self.layout[r][c] == char:
-    #                 locations.append((r, c))
-        # return locations
         
-    # def get_neighbors(self, node):
-    #     r, c = node
-    #     directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
-    #     return [(r + dr, c + dc) for dr, dc in directions if self.is_valid_move(r + dr, c + dc)]
-    
-    # def get_neighbors(self, node):
-    #     # Ensure node is a tuple (r, c)
-    #     if not isinstance(node, tuple) or len(node) != 2:
-    #         return []  # Return empty list if node is not valid
-
-    #     r, c = node
-    #     directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]  # Các hướng đi cơ bản: phải, xuống, trái, lên
-    #     neighbors = []
-
-    #     for dr, dc in directions:
-    #         new_r, new_c = r + dr, c + dc
-    #         if self.is_valid_move(new_r, new_c):
-    #             neighbors.append((new_r, new_c))
-
-    #     # Kiểm tra teleport ở các góc và thêm node sau teleport nếu cần
-    #     for direction in ["UP", "DOWN", "LEFT", "RIGHT"]:
-    #         teleport_node = self.teleport(node, direction)
-    #         if teleport_node != node and teleport_node not in neighbors:
-    #             neighbors.append(teleport_node)
-
-    #     return neighbors
-
     def is_wall(self, pos):
         r, c = pos
         return self.layout[r][c] == '%'
@@ -92,15 +50,6 @@ class Maze:
     def get_cost(self, node1, node2):
         return 1
 
-    
-    # def is_valid_move(self, x, y, can_go_through_walls=False):
-    #     if not (0 <= x < self.rows and 0 <= y < self.cols):
-    #         return False 
-
-    #     if not can_go_through_walls and (x, y) in self.walls:
-    #         return False 
-
-    #     return True
     def is_valid_move(self, x, y):
         if not (0 <= x < self.rows and 0 <= y < self.cols):
             return False 

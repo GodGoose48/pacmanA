@@ -253,7 +253,6 @@ class MazeGame:
     def run_with_action(self, action):
         running = True
         run_counter = 0
-        clock = pygame.time.Clock()
 
         for event in action:
             if not running:
@@ -262,9 +261,11 @@ class MazeGame:
             for quit in pygame.event.get():
                 if quit.type == pygame.QUIT:
                     running = False
+                if len(self.maze.foods_nodes) == 0:
+                    running = False
             self.draw()
             pygame.display.update()  
-            pygame.time.delay(10)  
+            pygame.time.delay(50)  
 
             if event == "UP":
                 self.player_pos = self.maze.teleport(self.player_pos, "UP")
@@ -280,15 +281,11 @@ class MazeGame:
                 self.move_player("RIGHT")
 
             run_counter += 1
-            print(f"Run counter: {run_counter}")
+            # print(f"Run counter: {run_counter}")
             
         if len(self.maze.foods_nodes) == 0:
-                win_font = pygame.font.SysFont('Arial', 36)
-                win_text = win_font.render("ALL FOOD COLLECTED!", True, (0, 255, 0))
-                text_rect = win_text.get_rect(center=(self.width//2, self.height//2))
-                self.screen.blit(win_text, text_rect)
                 pygame.display.flip()
-                pygame.time.wait(3000)  # Wait for 3 seconds
+                pygame.time.wait(1500)
         
         print(f"Game completed in {run_counter} steps")
 
