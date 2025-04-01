@@ -27,150 +27,144 @@ class MazeGame:
         for key in self.images:
             self.images[key] = pygame.transform.scale(self.images[key], (self.cell_size, self.cell_size))
 
-        # Set player start position
+        # start position
         self.player_pos = self.maze.start_node
         self.start_moved = False
-        
-        # Font for status bar
-        self.font = pygame.font.SysFont('Arial', 16)
-        
-        # Path visualization
+
         self.path_history = []
         self.wall_crossings = []  
 
-    # def draw(self):
-    #     # Fill background
-    #     self.screen.fill((0, 0, 0))
-        
-    #     # Draw maze elements
-    #     for r in range(self.maze.rows):
-    #         for c in range(self.maze.cols):
-    #             x, y = c * self.cell_size, r * self.cell_size
-    #             char = self.maze.layout[r][c]
-    #             self.screen.blit(self.images.get(char, self.images[' ']), (x, y))
-        
-    #     # Draw path history (faint footprints)
-    #     for pos in self.path_history:
-    #         r, c = pos
-    #         x, y = c * self.cell_size, r * self.cell_size
-    #         # Draw a small circle to represent footprint
-    #         pygame.draw.circle(self.screen, (100, 100, 255, 128), 
-    #                           (x + self.cell_size//2, y + self.cell_size//2), 
-    #                           self.cell_size//6)
-                              
-    #     # Highlight wall crossings in power mode
-    #     for pos in self.wall_crossings:
-    #         r, c = pos
-    #         x, y = c * self.cell_size, r * self.cell_size
-    #         # Draw a red X to show wall crossing
-    #         pygame.draw.line(self.screen, (255, 0, 0), 
-    #                         (x + 5, y + 5), 
-    #                         (x + self.cell_size - 5, y + self.cell_size - 5), 3)
-    #         pygame.draw.line(self.screen, (255, 0, 0), 
-    #                         (x + self.cell_size - 5, y + 5), 
-    #                         (x + 5, y + self.cell_size - 5), 3)
-
-    #     # Draw player
-    #     px, py = self.player_pos
-    #     player_x, player_y = py * self.cell_size, px * self.cell_size
-        
-    #     # Use power mode player sprite if in power mode
-    #     if self.maze.power_mode_steps > 0:
-    #         # Center the larger glow image
-    #         glow_size = self.images['O'].get_width()
-    #         offset = (glow_size - self.cell_size) // 2
-    #         self.screen.blit(self.images['O'], 
-    #                          (player_x - offset, player_y - offset))
-    #     else:
-    #         self.screen.blit(self.images['P'], (player_x, player_y))
-            
-    #     # Draw status bar
-    #     status_y = self.maze.rows * self.cell_size + 10
-        
-    #     # Power mode status
-    #     power_text = f"Power Mode: {'ON' if self.maze.power_mode_steps > 0 else 'OFF'}"
-    #     if self.maze.power_mode_steps > 0:
-    #         power_text += f" ({self.maze.power_mode_steps} steps left)"
-    #     power_surf = self.font.render(power_text, True, (255, 255, 0) if self.maze.power_mode_steps > 0 else (255, 255, 255))
-    #     self.screen.blit(power_surf, (10, status_y))
-        
-    #     # Food count
-    #     food_text = f"Food Remaining: {len(self.maze.foods_nodes)}"
-    #     food_surf = self.font.render(food_text, True, (255, 255, 255))
-    #     self.screen.blit(food_surf, (250, status_y))
-        
-    #     # Update display
-    #     pygame.display.flip()
-
     def draw(self):
+        # Fill background
         self.screen.fill((0, 0, 0))
         
-        coord_font = pygame.font.SysFont('Arial', 8)
-    
+        # Draw maze elements
         for r in range(self.maze.rows):
             for c in range(self.maze.cols):
                 x, y = c * self.cell_size, r * self.cell_size
                 char = self.maze.layout[r][c]
                 self.screen.blit(self.images.get(char, self.images[' ']), (x, y))
-                
-                if char in ['%', '.', 'O']:  
-                    coord_text = f"({r},{c})"
-                    coord_surf = coord_font.render(coord_text, True, (255, 255, 255))
-                    self.screen.blit(coord_surf, (x + 2, y + 2))
         
-        for pos in self.path_history:
-            r, c = pos
-            x, y = c * self.cell_size, r * self.cell_size
-        
-            pygame.draw.circle(self.screen, (100, 100, 255, 128), 
-                              (x + self.cell_size//2, y + self.cell_size//2), 
-                              self.cell_size//6)
+        # Draw path history (faint footprints)
+        # for pos in self.path_history:
+        #     r, c = pos
+        #     x, y = c * self.cell_size, r * self.cell_size
+        #     # Draw a small circle to represent footprint
+        #     pygame.draw.circle(self.screen, (100, 100, 255, 128), 
+        #                       (x + self.cell_size//2, y + self.cell_size//2), 
+        #                       self.cell_size//6)
+                              
+        # Highlight wall crossings in power mode
+        # for pos in self.wall_crossings:
+        #     r, c = pos
+        #     x, y = c * self.cell_size, r * self.cell_size
+        #     # Draw a red X to show wall crossing
+        #     pygame.draw.line(self.screen, (255, 0, 0), 
+        #                     (x + 5, y + 5), 
+        #                     (x + self.cell_size - 5, y + self.cell_size - 5), 3)
+        #     pygame.draw.line(self.screen, (255, 0, 0), 
+        #                     (x + self.cell_size - 5, y + 5), 
+        #                     (x + 5, y + self.cell_size - 5), 3)
 
-        for pos in self.wall_crossings:
-            r, c = pos
-            x, y = c * self.cell_size, r * self.cell_size
-            # Draw a red X to show wall crossing
-            pygame.draw.line(self.screen, (255, 0, 0), 
-                            (x + 5, y + 5), 
-                            (x + self.cell_size - 5, y + self.cell_size - 5), 3)
-            pygame.draw.line(self.screen, (255, 0, 0), 
-                            (x + self.cell_size - 5, y + 5), 
-                            (x + 5, y + self.cell_size - 5), 3)
-
-            cross_text = f"({r},{c})"
-            cross_surf = coord_font.render(cross_text, True, (255, 100, 100))
-            self.screen.blit(cross_surf, (x + 2, y + self.cell_size - 10))
-    
         # Draw player
         px, py = self.player_pos
         player_x, player_y = py * self.cell_size, px * self.cell_size
         
+        # Use power mode player sprite if in power mode
         if self.maze.power_mode_steps > 0:
+            # Center the larger glow image
             glow_size = self.images['O'].get_width()
             offset = (glow_size - self.cell_size) // 2
             self.screen.blit(self.images['O'], 
                              (player_x - offset, player_y - offset))
         else:
             self.screen.blit(self.images['P'], (player_x, player_y))
-
-        player_text = f"Player: ({px},{py})"
-        player_coord_surf = self.font.render(player_text, True, (255, 255, 0))
-        self.screen.blit(player_coord_surf, (10, self.height - 50))
+            
+        # Draw status bar
         status_y = self.maze.rows * self.cell_size + 10
         
-        power_text = f"Power Mode: {'ON' if self.maze.power_mode_steps > 0 else 'OFF'}"
-        if self.maze.power_mode_steps > 0:
-            power_text += f" ({self.maze.power_mode_steps} steps left)"
-        power_surf = self.font.render(power_text, True, (255, 255, 0) if self.maze.power_mode_steps > 0 else (255, 255, 255))
-        self.screen.blit(power_surf, (10, status_y))
+        # # Power mode status
+        # power_text = f"Power Mode: {'ON' if self.maze.power_mode_steps > 0 else 'OFF'}"
+        # if self.maze.power_mode_steps > 0:
+        #     power_text += f" ({self.maze.power_mode_steps} steps left)"
+        # power_surf = self.font.render(power_text, True, (255, 255, 0) if self.maze.power_mode_steps > 0 else (255, 255, 255))
+        # self.screen.blit(power_surf, (10, status_y))
         
-        # Food count
-        food_text = f"Food Remaining: {len(self.maze.foods_nodes)}"
-        food_surf = self.font.render(food_text, True, (255, 255, 255))
-        self.screen.blit(food_surf, (250, status_y))
-
+        # # Food count
+        # food_text = f"Food Remaining: {len(self.maze.foods_nodes)}"
+        # food_surf = self.font.render(food_text, True, (255, 255, 255))
+        # self.screen.blit(food_surf, (250, status_y))
+        
         # Update display
         pygame.display.flip()
+
+    # def draw(self):
+    #     self.screen.fill((0, 0, 0))
+        
+    #     coord_font = pygame.font.SysFont('Arial', 8)
+    
+    #     for r in range(self.maze.rows):
+    #         for c in range(self.maze.cols):
+    #             x, y = c * self.cell_size, r * self.cell_size
+    #             char = self.maze.layout[r][c]
+    #             self.screen.blit(self.images.get(char, self.images[' ']), (x, y))
+                
+    #             if char in ['%', '.', 'O']:  
+    #                 coord_text = f"({r},{c})"
+    #                 coord_surf = coord_font.render(coord_text, True, (255, 255, 255))
+    #                 self.screen.blit(coord_surf, (x + 2, y + 2))
+        
+    #     # for pos in self.path_history:
+    #     #     r, c = pos
+    #     #     x, y = c * self.cell_size, r * self.cell_size
+        
+    #     #     pygame.draw.circle(self.screen, (100, 100, 255, 128), 
+    #     #                       (x + self.cell_size//2, y + self.cell_size//2), 
+    #     #                       self.cell_size//6)
+
+    #     # for pos in self.wall_crossings:
+    #     #     r, c = pos
+    #     #     x, y = c * self.cell_size, r * self.cell_size
+    #     #     # Draw a red X to show wall crossing
+    #     #     pygame.draw.line(self.screen, (255, 0, 0), 
+    #     #                     (x + 5, y + 5), 
+    #     #                     (x + self.cell_size - 5, y + self.cell_size - 5), 3)
+    #     #     pygame.draw.line(self.screen, (255, 0, 0), 
+    #     #                     (x + self.cell_size - 5, y + 5), 
+    #     #                     (x + 5, y + self.cell_size - 5), 3)
+
+    #     #     cross_text = f"({r},{c})"
+    #     #     cross_surf = coord_font.render(cross_text, True, (255, 100, 100))
+    #     #     self.screen.blit(cross_surf, (x + 2, y + self.cell_size - 10))
+    
+    #     # Draw player
+    #     px, py = self.player_pos
+    #     player_x, player_y = py * self.cell_size, px * self.cell_size
+        
+    #     if self.maze.power_mode_steps > 0:
+    #         glow_size = self.images['O'].get_width()
+    #         offset = (glow_size - self.cell_size) // 2
+    #         self.screen.blit(self.images['O'], 
+    #                          (player_x - offset, player_y - offset))
+    #     else:
+    #         self.screen.blit(self.images['P'], (player_x, player_y))
+
+    #     player_text = f"Player: ({px},{py})"
+    #     player_coord_surf = self.font.render(player_text, True, (255, 255, 0))
+    #     self.screen.blit(player_coord_surf, (10, self.height - 50))
+    #     status_y = self.maze.rows * self.cell_size + 10
+        
+    #     power_text = f"Power Mode: {'ON' if self.maze.power_mode_steps > 0 else 'OFF'}"
+    #     if self.maze.power_mode_steps > 0:
+    #         power_text += f" ({self.maze.power_mode_steps} steps left)"
+    #     power_surf = self.font.render(power_text, True, (255, 255, 0) if self.maze.power_mode_steps > 0 else (255, 255, 255))
+    #     self.screen.blit(power_surf, (10, status_y))
+
+    #     food_text = f"Food Remaining: {len(self.maze.foods_nodes)}"
+    #     food_surf = self.font.render(food_text, True, (255, 255, 255))
+    #     self.screen.blit(food_surf, (250, status_y))
+
+    #     pygame.display.flip()
 
     def move_player(self, direction):
         r, c = self.player_pos
@@ -265,7 +259,7 @@ class MazeGame:
                     running = False
             self.draw()
             pygame.display.update()  
-            pygame.time.delay(50)  
+            pygame.time.delay(100)  
 
             if event == "UP":
                 self.player_pos = self.maze.teleport(self.player_pos, "UP")

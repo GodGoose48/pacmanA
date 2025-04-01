@@ -3,7 +3,7 @@ from mazeGame import MazeGame
 from astar import AStar
 
 def main():
-    maze_file = "layout/layout2.txt" 
+    maze_file = "layout/layout3.txt" 
     
     maze = Maze(maze_file)
     astar = AStar()
