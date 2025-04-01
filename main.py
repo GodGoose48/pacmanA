@@ -65,43 +65,29 @@
 # if __name__ == "__main__":
 #     main()
 
-
-# main.py - Run the Pacman solution
-
-import os
-import pygame
 from maze import Maze
 from mazeGame import MazeGame
 from astar import AStar
 
 def main():
-    # Set the path to your maze file
-    maze_file = "layout.txt"  # Update this to your actual file path
+    maze_file = "layout.txt" 
     
-    # Check if the file exists
-    if not os.path.exists(maze_file):
-        print(f"Error: Maze file '{maze_file}' not found.")
-        return
-    
-    # Initialize maze and A* search
     maze = Maze(maze_file)
     astar = AStar()
-    
-    print("Calculating optimal path to eat all food...")
-    
-    # Run A* to find path to all food points
+
     expanded, actions = astar.search(maze, maze.get_start_node(), None)
     
-    # Print solution information
     print(f"Solution found!")
-    print(f"Total steps: {len(actions)}")
-    print("\nMovement sequence:")
-    for i, action in enumerate(actions):
-        print(f"Step {i+1}: {action}")
+    # print(f"Total steps: {len(actions)}")
     
+    # best_food, best_path, best_power_steps = astar.find_closest_food(maze, maze.get_start_node())
+    # print(f"best path: {best_path}")
     
     game = MazeGame(maze_file)
-    game.run_with_actions(actions)
+    game.run_with_action(actions)
+    # print(f"action when inout: {actions}")
+    
+    # game.run()
 
 
 if __name__ == "__main__":

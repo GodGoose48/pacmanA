@@ -298,8 +298,8 @@
 #                                 g_cost[teleport_result] = teleport_cost
 #                                 came_from[teleport_result] = current
 #                                 power_after_teleport = current_power
-#                                 f_value = teleport_cost + self.heuristic(teleport_result, self.get_closest_food(teleport_result, food_points))
-#                                 heapq.heappush(pq, (f_value, teleport_cost, teleport_result, power_after_teleport))
+#                                 f_n = teleport_cost + self.heuristic(teleport_result, self.get_closest_food(teleport_result, food_points))
+#                                 heapq.heappush(pq, (f_n, teleport_cost, teleport_result, power_after_teleport))
 
 #                 # Calculate cost to neighbor
 #                 new_cost = cost + g.get_cost(current, neighbor)
@@ -313,9 +313,9 @@
 #                     power_after_move = max(0, current_power - 1)
                     
 #                     # Calculate f-value using minimum distance to any food point
-#                     f_value = new_cost + self.heuristic(neighbor, self.get_closest_food(neighbor, food_points))
+#                     f_n = new_cost + self.heuristic(neighbor, self.get_closest_food(neighbor, food_points))
                     
-#                     heapq.heappush(pq, (f_value, new_cost, neighbor, power_after_move))
+#                     heapq.heappush(pq, (f_n, new_cost, neighbor, power_after_move))
         
 #         return closest_food, path_to_food
     
@@ -494,9 +494,9 @@
 #                     power_after_move = max(0, current_power - 1)
                     
 #                     # Calculate f-value using minimum distance to any food point
-#                     f_value = new_cost + self.heuristic(neighbor, self.get_closest_food(neighbor, food_points))
+#                     f_n = new_cost + self.heuristic(neighbor, self.get_closest_food(neighbor, food_points))
                     
-#                     heapq.heappush(pq, (f_value, new_cost, neighbor, power_after_move))
+#                     heapq.heappush(pq, (f_n, new_cost, neighbor, power_after_move))
             
 #             # Check for teleport opportunities
 #             if current in g.corners:
@@ -510,8 +510,8 @@
 #                             came_from[teleport_result] = current
                             
 #                             # Power mode is unchanged by teleportation
-#                             f_value = teleport_cost + self.heuristic(teleport_result, self.get_closest_food(teleport_result, food_points))
-#                             heapq.heappush(pq, (f_value, teleport_cost, teleport_result, current_power))
+#                             f_n = teleport_cost + self.heuristic(teleport_result, self.get_closest_food(teleport_result, food_points))
+#                             heapq.heappush(pq, (f_n, teleport_cost, teleport_result, current_power))
         
 #         return closest_food, path_to_food
     
@@ -579,17 +579,231 @@
 #         return actions
 
 
+# from search import Search
+# import heapq
+# from maze import Maze
+
+# class AStar(Search):
+#     def search(self, g: Maze, src: tuple, dst: tuple) -> tuple:
+#         expanded = []
+#         all_foods = list(g.get_all_goals())  # All food points to eat
+        
+#         if not all_foods:
+#             return expanded, []
+
+#         # Store the complete path from the starting position to all food points
+#         final_path = []
+#         current_pos = src
+        
+#         # Keep track of remaining food points and pie locations
+#         remaining_foods = set(all_foods)
+#         pie_locations = set(g.pies_nodes)
+        
+#         # Keep track of power mode steps
+#         power_mode_steps = 0
+        
+#         # Continue until all food points are eaten
+#         while remaining_foods:
+#             # Find the closest food point from current position
+#             closest_food, path_to_food, new_power_steps = self.find_closest_food(
+#                 g, current_pos, remaining_foods, pie_locations, power_mode_steps
+#             )
+            
+#             if not path_to_food:  # If no path found to any remaining food
+#                 break
+                
+#             # Add the path to the final path (excluding the starting position to avoid duplicates)
+#             if final_path:
+#                 final_path.extend(path_to_food[1:])
+#             else:
+#                 final_path.extend(path_to_food)
+            
+#             # Update the current position
+#             current_pos = path_to_food[-1]
+            
+#             # Remove eaten food
+#             if current_pos in remaining_foods:
+#                 remaining_foods.remove(current_pos)
+            
+#             # Check each position in the path for pies and update power mode
+#             for pos in path_to_food:
+#                 if pos in pie_locations:
+#                     power_mode_steps = 5  # Reset power mode steps
+#                     pie_locations.remove(pos)  # Remove eaten pie
+#                 else:
+#                     power_mode_steps = max(0, power_mode_steps - 1)  # Decrease power mode steps
+            
+#             # Add nodes to expanded (excluding duplicates)
+#             for node in path_to_food:
+#                 if node not in expanded:
+#                     expanded.append(node)
+        
+#         # Convert final path to movement actions
+#         actions = self.convert_path_to_actions(final_path, g.walls)
+#         print(f"Actions: {actions}")
+        
+#         return expanded, actions
+    
+#     def find_closest_food(self, g: Maze, start: tuple, food_points: set, pie_locations: set, initial_power_steps: int) -> tuple:
+#         pq = []  # Priority queue
+
+#         start_state = (start, initial_power_steps)
+        
+#         g_cost = {start_state: 0}  # Cost from start to current state
+#         came_from = {start_state: None}  # Parent pointers for path reconstruction
+#         expanded = set()  # Set of expanded states
+        
+#         # Calculate initial f value
+#         f_n =  min([self.heuristic(start, food) for food in food_points]) if food_points else 0
+        
+#         # Push starting state to the queue: (f-value, g-value, position, power_steps)
+#         heapq.heappush(pq, (f_n, 0, start, initial_power_steps))
+        
+#         closest_food = None
+#         path_to_food = []
+#         ending_power_steps = 0
+        
+#         while pq:
+#             _, cost, current, steps_left = heapq.heappop(pq)
+            
+#             current_state = (current, steps_left)
+            
+#             # Skip if already expanded
+#             if current_state in expanded:
+#                 continue
+                
+#             expanded.add(current_state)
+            
+#             # Check if we found a food point
+#             if current in food_points:
+#                 closest_food = current
+#                 ending_power_steps = steps_left
+                
+#                 # Reconstruct path
+#                 path_to_food = []
+#                 current_state = (current, steps_left)
+#                 while current_state is not None:
+#                     path_to_food.append(current_state[0])  # Add just the position
+#                     current_state = came_from[current_state]
+#                 path_to_food.reverse()
+#                 break
+            
+#             # Update power mode if we found a pie
+#             current_power = steps_left
+#             if current in pie_locations:
+#                 current_power = 5  # Reset power mode steps
+            
+#             # Get valid neighbors considering walls and power mode
+#             neighbors = self.get_valid_neighbors(g, current, current_power)
+            
+#             # Process normal neighbors
+#             for neighbor in neighbors:
+#                 # Calculate new power steps - decreases by 1 for each move
+#                 new_power = current_power
+#                 if neighbor in pie_locations:
+#                     new_power = 5 
+#                 else:
+#                     new_power = max(0, new_power - 1)  # Decrease power steps
+                
+#                 neighbor_state = (neighbor, new_power)
+                
+#                 # Calculate cost to neighbor
+#                 new_cost = cost + g.get_cost(current, neighbor)
+                
+#                 # If better path found
+#                 if neighbor_state not in g_cost or new_cost < g_cost[neighbor_state]:
+#                     g_cost[neighbor_state] = new_cost
+#                     came_from[neighbor_state] = current_state
+                    
+#                     # Calculate f-value using minimum distance to any food point
+#                     h_value = min([self.heuristic(neighbor, food) for food in food_points]) if food_points else 0
+#                     f_n = new_cost + h_value
+                    
+#                     heapq.heappush(pq, (f_n, new_cost, neighbor, new_power))
+            
+#             if current in g.corners:
+#                 for direction in ["UP", "DOWN", "LEFT", "RIGHT"]:
+#                     teleport_result = g.teleport(current, direction)
+#                     if teleport_result != current:
+#                         teleport_state = (teleport_result, current_power) 
+                        
+#                         # If better path found through teleport
+#                         teleport_cost = cost + 1
+#                         if teleport_state not in g_cost or teleport_cost < g_cost[teleport_state]:
+#                             g_cost[teleport_state] = teleport_cost
+#                             came_from[teleport_state] = current_state
+                            
+#                             # Calculate f-value
+#                             h_value = min([self.heuristic(teleport_result, food) for food in food_points]) if food_points else 0
+#                             f_n = teleport_cost + h_value
+                            
+#                             heapq.heappush(pq, (f_n, teleport_cost, teleport_result, current_power))
+#         print(f"Closest food: {closest_food}, Path to food: {path_to_food}, Ending power steps: {ending_power_steps}")
+#         return closest_food, path_to_food, ending_power_steps
+    
+#     def get_valid_neighbors(self, g: Maze, pos: tuple, power_steps: int) -> list:
+
+#         r, c = pos
+#         directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]  # Right, Down, Left, Up
+#         neighbors = []
+        
+#         for dr, dc in directions:
+#             new_r, new_c = r + dr, c + dc
+            
+#             # Check if position is within maze bounds
+#             if 0 <= new_r < g.rows and 0 <= new_c < g.cols:
+#                 # Can go through walls in power mode
+#                 if power_steps > 0 or (new_r, new_c) not in g.walls:
+#                     neighbors.append((new_r, new_c))
+#         print(f"Valid neighbors for {pos} with power steps {power_steps}: {neighbors}")
+        
+#         return neighbors
+    
+#     def heuristic(self, node: tuple, goal: tuple) -> int:
+#         return abs(node[0] - goal[0]) + abs(node[1] - goal[1])
+    
+#     def convert_path_to_actions(self, path: list, walls: set) -> list:
+
+#         if not path or len(path) < 2:
+#             return []
+            
+#         actions = []
+#         for i in range(1, len(path)):
+#             prev_pos = path[i-1]
+#             curr_pos = path[i]
+            
+#             # Check for teleportation (non-adjacent positions)
+#             if abs(prev_pos[0] - curr_pos[0]) > 1 or abs(prev_pos[1] - curr_pos[1]) > 1:
+#                 actions.append(f"TELEPORT from {prev_pos} to {curr_pos}")
+#             else:
+#                 # Regular movement
+#                 if curr_pos[0] < prev_pos[0]:
+#                     action = "UP"
+#                 elif curr_pos[0] > prev_pos[0]:
+#                     action = "DOWN"
+#                 elif curr_pos[1] < prev_pos[1]:
+#                     action = "LEFT"
+#                 elif curr_pos[1] > prev_pos[1]:
+#                     action = "RIGHT"
+#                 else:
+#                     continue 
+
+#                 if curr_pos in walls:
+#                     action += " (through wall)"
+                
+#                 actions.append(action)
+        
+#         return actions
+
 from search import Search
 import heapq
 from maze import Maze
 
 class AStar(Search):
     def search(self, g: Maze, src: tuple, dst: tuple) -> tuple:
-        # Initialize variables
         expanded = []
         all_foods = list(g.get_all_goals())  # All food points to eat
         
-        # If no food, return empty path
         if not all_foods:
             return expanded, []
 
@@ -621,19 +835,19 @@ class AStar(Search):
                 final_path.extend(path_to_food)
             
             # Update the current position
-            current_pos = path_to_food[-1]
+            current_pos = closest_food
             
             # Remove eaten food
-            if current_pos in remaining_foods:
-                remaining_foods.remove(current_pos)
+            if closest_food in remaining_foods:
+                remaining_foods.remove(closest_food)
             
-            # Check each position in the path for pies and update power mode
+            # Update power mode steps to the value after reaching the food
+            power_mode_steps = new_power_steps
+            
+            # Update pie locations (remove any pies eaten along the path)
             for pos in path_to_food:
                 if pos in pie_locations:
-                    power_mode_steps = 5  # Reset power mode steps
-                    pie_locations.remove(pos)  # Remove eaten pie
-                else:
-                    power_mode_steps = max(0, power_mode_steps - 1)  # Decrease power mode steps
+                    pie_locations.remove(pos)
             
             # Add nodes to expanded (excluding duplicates)
             for node in path_to_food:
@@ -641,160 +855,144 @@ class AStar(Search):
                     expanded.append(node)
         
         # Convert final path to movement actions
+        # print(final_path)
         actions = self.convert_path_to_actions(final_path, g.walls)
-        
         return expanded, actions
     
     def find_closest_food(self, g: Maze, start: tuple, food_points: set, pie_locations: set, initial_power_steps: int) -> tuple:
+        if not food_points:
+            return None, [], 0
+            
         pq = []  # Priority queue
         
-        # State includes position and power mode steps
-        # Format: (position, power_steps)
-        start_state = (start, initial_power_steps)
+        # Initialize with starting state: (f-value, tie-breaker, position, power_steps, path_cost)
+        heapq.heappush(pq, (0, 0, start, initial_power_steps, 0))
         
-        g_cost = {start_state: 0}  # Cost from start to current state
-        came_from = {start_state: None}  # Parent pointers for path reconstruction
-        expanded = set()  # Set of expanded states
+        # For tracking visited states to avoid cycles
+        visited = set()
         
-        # Calculate initial f value
-        h_value = min([self.heuristic(start, food) for food in food_points]) if food_points else 0
-        f_value = h_value
+        # For reconstructing the path
+        came_from = {(start, initial_power_steps): None}
         
-        # Push starting state to the queue: (f-value, g-value, position, power_steps)
-        heapq.heappush(pq, (f_value, 0, start, initial_power_steps))
-        
-        closest_food = None
-        path_to_food = []
-        ending_power_steps = 0
+        # Track the best food found so far
+        best_food = None
+        best_path = []
+        best_power_steps = 0
+        best_cost = float('inf')
         
         while pq:
-            _, cost, current, steps_left = heapq.heappop(pq)
+            _, _, current, power_steps, path_cost = heapq.heappop(pq)
             
-            current_state = (current, steps_left)
-            
-            # Skip if already expanded
-            if current_state in expanded:
+            # Skip if already visited this state
+            state = (current, power_steps)
+            if state in visited:
                 continue
                 
-            expanded.add(current_state)
+            visited.add(state)
             
-            # Check if we found a food point
-            if current in food_points:
-                closest_food = current
-                ending_power_steps = steps_left
+            # Check if we've reached a food point
+            if current in food_points and path_cost < best_cost:
+                best_food = current
+                best_power_steps = power_steps
+                best_cost = path_cost
                 
                 # Reconstruct path
-                path_to_food = []
-                current_state = (current, steps_left)
-                while current_state is not None:
-                    path_to_food.append(current_state[0])  # Add just the position
-                    current_state = came_from[current_state]
-                path_to_food.reverse()
-                break
-            
-            # Update power mode if we found a pie
-            current_power = steps_left
-            if current in pie_locations:
-                current_power = 5  # Reset power mode steps
+                path = []
+                curr_state = state
+                while curr_state is not None:
+                    path.append(curr_state[0])  # Add just the position
+                    curr_state = came_from.get(curr_state)
+                best_path = list(reversed(path))
+                
+                # We could continue searching for potentially better paths
+                # but for efficiency, we can break here if desired
+                # break
             
             # Get valid neighbors considering walls and power mode
-            neighbors = self.get_valid_neighbors(g, current, current_power)
+            neighbors = self.get_valid_neighbors(g, current, power_steps)
             
-            # Process normal neighbors
-            for neighbor in neighbors:
-                # Calculate new power steps - decreases by 1 for each move
-                new_power = current_power
+            for neighbor, is_teleport in neighbors:
+                # Calculate new power steps
+                new_power = power_steps
+                
+                # If we find a pie, reset power mode
                 if neighbor in pie_locations:
-                    new_power = 5  # Reset if we find a pie
+                    new_power = 5
                 else:
-                    new_power = max(0, new_power - 1)  # Decrease power steps
+                    # Decrease power steps by 1 unless already at 0
+                    new_power = max(0, new_power - 1)
                 
+                # Calculate new path cost (teleport costs 1, normal move costs depend on maze)
+                move_cost = 1 if is_teleport else g.get_cost(current, neighbor)
+                new_cost = path_cost + move_cost
+                
+                # Only consider this neighbor if we haven't visited it with same or better power
                 neighbor_state = (neighbor, new_power)
-                
-                # Calculate cost to neighbor
-                new_cost = cost + g.get_cost(current, neighbor)
-                
-                # If better path found
-                if neighbor_state not in g_cost or new_cost < g_cost[neighbor_state]:
-                    g_cost[neighbor_state] = new_cost
-                    came_from[neighbor_state] = current_state
+                if neighbor_state not in visited:
+                    # Calculate heuristic - Manhattan distance to closest food
+                    h_value = min([self.heuristic(neighbor, food) for food in food_points])
                     
-                    # Calculate f-value using minimum distance to any food point
-                    h_value = min([self.heuristic(neighbor, food) for food in food_points]) if food_points else 0
+                    # Adjust heuristic if in power mode (can go through walls)
+                    if new_power > 0:
+                        h_value = h_value * 0.8  
+                    
                     f_value = new_cost + h_value
-                    
-                    heapq.heappush(pq, (f_value, new_cost, neighbor, new_power))
-            
-            if current in g.corners:
-                for direction in ["UP", "DOWN", "LEFT", "RIGHT"]:
-                    teleport_result = g.teleport(current, direction)
-                    if teleport_result != current:
-                        # If teleportation is possible
-                        teleport_state = (teleport_result, current_power)  # Power steps unchanged by teleportation
-                        
-                        # If better path found through teleport
-                        teleport_cost = cost + 1
-                        if teleport_state not in g_cost or teleport_cost < g_cost[teleport_state]:
-                            g_cost[teleport_state] = teleport_cost
-                            came_from[teleport_state] = current_state
-                            
-                            # Calculate f-value
-                            h_value = min([self.heuristic(teleport_result, food) for food in food_points]) if food_points else 0
-                            f_value = teleport_cost + h_value
-                            
-                            heapq.heappush(pq, (f_value, teleport_cost, teleport_result, current_power))
+                    heapq.heappush(pq, (f_value, new_cost, neighbor, new_power, new_cost))
+                    came_from[neighbor_state] = state
         
-        return closest_food, path_to_food, ending_power_steps
+        return best_food, best_path, best_power_steps
     
     def get_valid_neighbors(self, g: Maze, pos: tuple, power_steps: int) -> list:
-
         r, c = pos
-        directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]  # Right, Down, Left, Up
+        directions = [(0, 1), (1, 0), (0, -1), (-1, 0)] 
         neighbors = []
         
         for dr, dc in directions:
             new_r, new_c = r + dr, c + dc
             
-            # Check if position is within maze bounds
             if 0 <= new_r < g.rows and 0 <= new_c < g.cols:
                 # Can go through walls in power mode
                 if power_steps > 0 or (new_r, new_c) not in g.walls:
-                    neighbors.append((new_r, new_c))
-        
+                    neighbors.append(((new_r, new_c), False))  
+
+        if pos in g.corners:
+            for direction in ["UP", "DOWN", "LEFT", "RIGHT"]:
+                teleport_result = g.teleport(pos, direction)
+                if teleport_result != pos: 
+                    neighbors.append((teleport_result, True))  
         return neighbors
     
     def heuristic(self, node: tuple, goal: tuple) -> int:
         return abs(node[0] - goal[0]) + abs(node[1] - goal[1])
     
     def convert_path_to_actions(self, path: list, walls: set) -> list:
-
+        actions = []
+    
         if not path or len(path) < 2:
             return []
             
-        actions = []
         for i in range(1, len(path)):
             prev_pos = path[i-1]
             curr_pos = path[i]
             
-            # Check for teleportation (non-adjacent positions)
             if abs(prev_pos[0] - curr_pos[0]) > 1 or abs(prev_pos[1] - curr_pos[1]) > 1:
-                actions.append(f"TELEPORT from {prev_pos} to {curr_pos}")
+                continue
             else:
-                # Regular movement
                 if curr_pos[0] < prev_pos[0]:
                     action = "UP"
+                    # print(f"Moving UP from {prev_pos} to {curr_pos}")
                 elif curr_pos[0] > prev_pos[0]:
                     action = "DOWN"
+                    # print(f"Moving DOWN from {prev_pos} to {curr_pos}")
                 elif curr_pos[1] < prev_pos[1]:
                     action = "LEFT"
+                    # print(f"Moving LEFT from {prev_pos} to {curr_pos}")
                 elif curr_pos[1] > prev_pos[1]:
                     action = "RIGHT"
+                    # print(f"Moving RIGHT from {prev_pos} to {curr_pos}")
                 else:
                     continue 
-
-                if curr_pos in walls:
-                    action += " (through wall)"
                 
-                actions.append(action)
-        
+            actions.append(action)
+        # print(f"Actions: {actions}")
         return actions

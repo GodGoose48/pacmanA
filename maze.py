@@ -49,28 +49,27 @@ class Maze:
     #     directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
     #     return [(r + dr, c + dc) for dr, dc in directions if self.is_valid_move(r + dr, c + dc)]
     
-    def get_neighbors(self, node):
-        # Ensure node is a tuple (r, c)
-        if not isinstance(node, tuple) or len(node) != 2:
-            return []  # Return empty list if node is not valid
+    # def get_neighbors(self, node):
+    #     # Ensure node is a tuple (r, c)
+    #     if not isinstance(node, tuple) or len(node) != 2:
+    #         return []  # Return empty list if node is not valid
 
-        r, c = node
-        directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]  # Các hướng đi cơ bản: phải, xuống, trái, lên
-        neighbors = []
+    #     r, c = node
+    #     directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]  # Các hướng đi cơ bản: phải, xuống, trái, lên
+    #     neighbors = []
 
-        # Thêm các láng giềng hợp lệ vào danh sách neighbors
-        for dr, dc in directions:
-            new_r, new_c = r + dr, c + dc
-            if self.is_valid_move(new_r, new_c):
-                neighbors.append((new_r, new_c))
+    #     for dr, dc in directions:
+    #         new_r, new_c = r + dr, c + dc
+    #         if self.is_valid_move(new_r, new_c):
+    #             neighbors.append((new_r, new_c))
 
-        # Kiểm tra teleport ở các góc và thêm node sau teleport nếu cần
-        for direction in ["UP", "DOWN", "LEFT", "RIGHT"]:
-            teleport_node = self.teleport(node, direction)
-            if teleport_node != node and teleport_node not in neighbors:
-                neighbors.append(teleport_node)
+    #     # Kiểm tra teleport ở các góc và thêm node sau teleport nếu cần
+    #     for direction in ["UP", "DOWN", "LEFT", "RIGHT"]:
+    #         teleport_node = self.teleport(node, direction)
+    #         if teleport_node != node and teleport_node not in neighbors:
+    #             neighbors.append(teleport_node)
 
-        return neighbors
+    #     return neighbors
 
     def is_wall(self, pos):
         r, c = pos
